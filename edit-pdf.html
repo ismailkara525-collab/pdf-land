@@ -1,0 +1,32 @@
+const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+// Assume: file.buffer is the original PDF uploaded by the user
+// Assume: annotationText is received from the frontend (via another form field)
+
+async function addTextToPdf(pdfBuffer, textToAdd) {
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    const pages = pdfDoc.getPages();
+    const firstPage = pages[0]; // Apply text to the first page
+
+    const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Draw the text (e.g., in the bottom left corner)
+    firstPage.drawText(textToAdd, {
+        x: 50,
+        y: 50, // Coordinates from the bottom left
+        size: 20,
+        font: helveticaFont,
+        color: rgb(0.95, 0.1, 0.1), // Bright Red
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    return Buffer.from(pdfBytes);
+}
+
+// In your main backend route switch statement:
+case 'edit-pdf':
+    // You must update your frontend to send 'annotationText' in the FormData
+    const annotationText = req.body.annotationText || "Added by PDF Land"; 
+    
+    // Call the function
+    processedFileBuffer = await addTextToPdf(file.buffer, annotationText);
+    break;
