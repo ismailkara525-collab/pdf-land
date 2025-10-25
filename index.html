@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Land - Neon PDF Tools</title>
+    <meta name="description" content="An all-in-one PDF conversion and editing tool with a stylish neon dark theme. Convert, edit, merge, and split PDFs with ease." />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        background-color: #030712; /* gray-950 */
+      }
+      .neon-shadow {
+        box-shadow: 0 0 5px var(--neon-color), 0 0 10px var(--neon-color), 0 0 15px var(--neon-color);
+      }
+      .neon-shadow-sm {
+        box-shadow: 0 0 2px var(--neon-color), 0 0 4px var(--neon-color);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import React from 'react';
+      import ReactDOM from 'react-dom/client';
+
+      // --- Constants ---
+      const NEON_PALETTE = [
+          '#39FF14', '#FF10F0', '#1F51FF', '#FFFF00', '#FF5F1F', '#00FFFF', '#7D05F9', '#FF073A',
+          '#CCFF00', '#FF00FF', '#50BFE6', '#FF6EC7', '#40E0D0', '#34eb86', '#e842f5', '#f5b342',
+          '#f54242', '#429ef5', '#42f59e', '#f542d4', '#a142f5', '#f5a142', '#84f542', '#42f5e9',
+      ];
+      const assignColor = (index) => NEON_PALETTE[index % NEON_PALETTE.length];
+      const PDF_TOOLS = [
+          { id: 'edit-pdf', name: 'Edit PDF', description: 'Add text, images, and annotations to your PDF', category: 'editing', color: assignColor(0) },
+          { id: 'add-watermark', name: 'Add Watermark', description: 'Add a text or image watermark to your PDF', category: 'editing', color: assignColor(1) },
+          { id: 'header-footer', name: 'Header & Footer', description: 'Add headers and footers to PDF pages', category: 'editing', color: assignColor(2) },
+          { id: 'page-numbers', name: 'Page Numbers', description: 'Insert page numbers into your PDF file', category: 'editing', color: assignColor(3) },
+          { id: 'edit-metadata', name: 'Edit Metadata', description: 'Change author, title, and other metadata', category: 'editing', color: assignColor(4) },
+          { id: 'merge-pdf', name: 'Merge PDF', description: 'Combine multiple PDFs into one single file', category: 'organization', color: assignColor(5) },
+          { id: 'split-pdf', name: 'Split PDF', description: 'Divide a PDF into multiple smaller files', category: 'organization', color: assignColor(6) },
+          { id: 'extract-pages', name: 'Extract Pages', description: 'Extract specific pages from a PDF', category: 'organization', color: assignColor(7) },
+          { id: 'delete-pages', name: 'Delete Pages', description: 'Remove one or more pages from your PDF', category: 'organization', color: assignColor(8) },
+          { id: 'rearrange-pages', name: 'Rearrange Pages', description: 'Reorder pages in your PDF document', category: 'organization', color: assignColor(9) },
+          { id: 'compress-pdf', name: 'Compress PDF', description: 'Reduce the file size of your PDF document', category: 'optimization', color: assignColor(10) },
+          { id: 'repair-pdf', name: 'Repair PDF', description: 'Attempt to fix a corrupted or damaged PDF', category: 'optimization', color: assignColor(11) },
+          { id: 'flatten-pdf', name: 'Flatten PDF', description: 'Make PDF forms and annotations non-editable', category: 'optimization', color: assignColor(12) },
+          { id: 'unlock-pdf', name: 'Unlock PDF', description: 'Remove password and restrictions from a PDF', category: 'security', color: assignColor(13) },
+          { id: 'protect-pdf', name: 'Protect PDF', description: 'Add password protection to your PDF', category: 'security', color: assignColor(14) },
+          { id: 'sign-pdf', name: 'Sign PDF', description: 'Add your digital signature to a document', category: 'security', color: assignColor(15) },
+          { id: 'rotate-pdf', name: 'Rotate PDF', description: 'Rotate all or specific pages in your PDF', category: 'manipulation', color: assignColor(16) },
+          { id: 'crop-pdf', name: 'Crop PDF', description: 'Crop the visible area of PDF pages', category: 'manipulation', color: assignColor(17) },
+          { id: 'resize-pages', name: 'Resize Pages', description: 'Change the page size of your PDF', category: 'manipulation', color: assignColor(18) },
+          { id: 'pdf-ocr', name: 'PDF OCR', description: 'Extract text from scanned PDFs using OCR', category: 'extraction', color: assignColor(19) },
+          { id: 'extract-text', name: 'Extract Text', description: 'Pull all text content from a PDF file', category: 'extraction', color: assignColor(20) },
+          { id: 'extract-images', name: 'Extract Images', description: 'Extract all images contained in a PDF', category: 'extraction', color: assignColor(21) },
+          { id: 'pdf-to-word', name: 'PDF to Word', description: 'Convert PDF to an editable Word document', category: 'conversion-from', color: assignColor(0) },
+          { id: 'pdf-to-excel', name: 'PDF to Excel', description: 'Convert PDF tables to Excel spreadsheets', category: 'conversion-from', color: assignColor(1) },
+          { id: 'pdf-to-ppt', name: 'PDF to PowerPoint', description: 'Convert PDF pages to a PPT presentation', category: 'conversion-from', color: assignColor(2) },
+          { id: 'pdf-to-jpg', name: 'PDF to JPG', description: 'Convert each PDF page to a JPG image', category: 'conversion-from', color: assignColor(3) },
+          { id: 'pdf-to-png', name: 'PDF to PNG', description: 'Convert PDF pages to high-quality PNGs', category: 'conversion-from', color: assignColor(4) },
+          { id: 'pdf-to-txt', name: 'PDF to Text', description: 'Extract plain text from your PDF file', category: 'conversion-from', color: assignColor(5) },
+          { id: 'pdf-to-html', name: 'PDF to HTML', description: 'Convert your PDF to a web page format', category: 'conversion-from', color: assignColor(6) },
+          { id: 'pdf-to-pdfa', name: 'PDF to PDF/A', description: 'Convert to PDF/A for long-term archiving', category: 'conversion-from', color: assignColor(7) },
+          { id: 'word-to-pdf', name: 'Word to PDF', description: 'Convert Word documents to PDF format', category: 'conversion-to', color: assignColor(8) },
+          { id: 'excel-to-pdf', name: 'Excel to PDF', description: 'Convert Excel spreadsheets to PDF', category: 'conversion-to', color: assignColor(9) },
+          { id: 'ppt-to-pdf', name: 'PowerPoint to PDF', description: 'Convert PPT presentations to PDF', category: 'conversion-to', color: assignColor(10) },
+          { id: 'jpg-to-pdf', name: 'JPG to PDF', description: 'Combine JPG images into a single PDF', category: 'conversion-to', color: assignColor(11) },
+          { id: 'png-to-pdf', name: 'PNG to PDF', description: 'Convert PNG images to a PDF document', category: 'conversion-to', color: assignColor(12) },
+          { id: 'html-to-pdf', name: 'HTML to PDF', description: 'Convert web pages to PDF documents', category: 'conversion-to', color: assignColor(13) },
+          { id: 'txt-to-pdf', name: 'Text to PDF', description: 'Convert a plain text file into a PDF', category: 'conversion-to', color: assignColor(14) },
+          { id: 'images-to-pdf', name: 'Images to PDF', description: 'Convert various image formats to PDF', category: 'conversion-to', color: assignColor(15) },
+      ];
+      const THEME_LIME = { name: 'Lime', color: '#a3e635', className: 'theme-lime' };
+
+      // --- Components ---
+      const Spinner = () => (
+          React.createElement('svg', {
+              className: "animate-spin -ml-1 mr-3 h-5 w-5 text-inherit",
+              xmlns: "http://www.w3.org/2000/svg",
+              fill: "none",
+              viewBox: "0 0 24 24"
+            },
+            React.createElement('circle', { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
+            React.createElement('path', { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+          )
+      );
+
+      const FileIcon = () => (
+        React.createElement('svg', { xmlns: "http://www.w3.org/2000/svg", className: "h-12 w-12 mx-auto text-gray-500", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor" },
+          React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 1, d: "M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" })
+        )
+      );
+
+      const UploadArea = ({ file, onFileChange }) => {
+          const [isDragOver, setIsDragOver] = React.useState(false);
+          const inputRef = React.useRef(null);
+          const handleDragEnter = React.useCallback((e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }, []);
+          const handleDragLeave = React.useCallback((e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }, []);
+          const handleDragOver = React.useCallback((e) => { e.preventDefault(); e.stopPropagation(); }, []);
+          const handleDrop = React.useCallback((e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsDragOver(false);
+              if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                  onFileChange(e.dataTransfer.files[0]);
+              }
+          }, [onFileChange]);
+          const handleFileSelect = (e) => {
+              if (e.target.files && e.target.files.length > 0) {
+                  onFileChange(e.target.files[0]);
+              }
+          };
+          const borderColor = isDragOver ? 'var(--neon-color)' : '#4b5563';
+          return (
+              React.createElement('div', null,
+                  React.createElement('input', { type: "file", ref: inputRef, onChange: handleFileSelect, className: "hidden", accept: ".pdf, image/*, .doc, .docx, .xls, .xlsx, .ppt, .pptx" }),
+                  React.createElement('div', {
+                          onDragEnter: handleDragEnter, onDragLeave: handleDragLeave, onDragOver: handleDragOver, onDrop: handleDrop,
+                          onClick: () => inputRef.current?.click(),
+                          className: "flex justify-center items-center w-full px-6 py-10 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-300",
+                          style: { borderColor: borderColor, backgroundColor: isDragOver ? 'rgba(var(--neon-color-rgb), 0.1)' : '#111827' }
+                      },
+                      React.createElement('div', { className: "text-center" },
+                          file ?
+                          React.createElement(React.Fragment, null,
+                              React.createElement('p', { className: "text-lg font-semibold text-white" }, "File Selected:"),
+                              React.createElement('p', { className: "text-md text-gray-300 mt-1" }, file.name),
+                              React.createElement('p', { className: "text-sm text-gray-500 mt-2" }, "Click or drop another file to replace")
+                          ) :
+                          React.createElement(React.Fragment, null,
+                              React.createElement(FileIcon),
+                              React.createElement('p', { className: "mt-2 text-md text-gray-400" },
+                                  React.createElement('span', { className: "font-semibold", style: { color: 'var(--neon-color)' } }, "Click to upload"), " or drag and drop"
+                              ),
+                              React.createElement('p', { className: "text-xs text-gray-500 mt-1" }, "PDF, DOCX, JPG, PNG, etc.")
+                          )
+                      )
+                  )
+              )
+          );
+      };
+
+      const ToolPage = ({ tool, onBack }) => {
+          const [file, setFile] = React.useState(null);
+          const [isLoading, setIsLoading] = React.useState(false);
+          const [error, setError] = React.useState(null);
+          const [resultUrl, setResultUrl] = React.useState(null);
+          const handleFileChange = (selectedFile) => {
+              setFile(selectedFile);
+              setError(null);
+              setResultUrl(null);
+          };
+          const processTool = React.useCallback(async () => {
+              if (!file) { setError('Please select a file first.'); return; }
+              setIsLoading(true); setError(null); setResultUrl(null);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+              if (Math.random() > 0.1) {
+                  const blob = new Blob(["Simulated PDF content"], { type: "application/pdf" });
+                  const url = URL.createObjectURL(blob);
+                  setResultUrl(url);
+              } else {
+                  setError('An unexpected error occurred during processing. Please try again.');
+              }
+              setIsLoading(false);
+          }, [file]);
+          const resetTool = () => { setFile(null); setIsLoading(false); setError(null); setResultUrl(null); };
+          return (
+              React.createElement('div', { className: "space-y-8" },
+                  React.createElement('div', null,
+                      React.createElement('button', { onClick: onBack, className: "text-sm font-semibold text-gray-400 hover:text-[var(--neon-color)] transition-colors duration-200" }, "← Back to all tools"),
+                      React.createElement('h1', { className: "text-4xl font-bold tracking-tight text-white mt-2" }, tool.name),
+                      React.createElement('p', { className: "mt-2 text-lg text-gray-400" }, tool.description)
+                  ),
+                  React.createElement('div', { className: "bg-gray-900 border border-gray-800 rounded-lg p-8 space-y-6" },
+                      React.createElement(UploadArea, { file: file, onFileChange: handleFileChange }),
+                      error && React.createElement('div', { className: "bg-red-900/50 border border-red-500 text-red-300 px-4 py-3 rounded-md text-sm" }, error),
+                      React.createElement('div', { className: "flex flex-col sm:flex-row gap-4" },
+                          React.createElement('button', { onClick: processTool, disabled: !file || isLoading, className: "w-full sm:w-auto flex-1 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-gray-950 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200", style: { backgroundColor: 'var(--neon-color)' } },
+                              isLoading ? React.createElement(React.Fragment, null, React.createElement(Spinner), "Processing...") : `Process ${file ? file.name : ''}`
+                          ),
+                          React.createElement('button', { onClick: resetTool, className: "w-full sm:w-auto px-6 py-3 border border-gray-600 text-base font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:border-gray-500 transition-colors duration-200" }, "Reset")
+                      ),
+                      resultUrl && React.createElement('div', { className: "bg-green-900/50 border border-green-500 text-green-300 px-4 py-4 rounded-md space-y-3" },
+                          React.createElement('h3', { className: "font-bold" }, "✓ Processing Complete!"),
+                          React.createElement('p', null, "Your file has been processed successfully. Download it now."),
+                          React.createElement('a', { href: resultUrl, download: `${file?.name.split('.')[0]}-processed.pdf`, className: "inline-block px-5 py-2.5 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600 transition-colors duration-200" }, "Download Result")
+                      )
+                  )
+              )
+          );
+      };
+
+      const ToolCard = ({ tool, onSelect }) => (
+          React.createElement('div', {
+                  onClick: () => onSelect(tool),
+                  className: "group cursor-pointer bg-gray-900 rounded-lg p-6 border border-gray-700/50 hover:border-[var(--neon-color)] transition-all duration-300 transform hover:-translate-y-1 h-full",
+                  style: { '--neon-color': tool.color }
+              },
+              React.createElement('div', { className: "mb-4" },
+                  React.createElement('h3', { className: "text-xl font-bold text-white group-hover:text-[var(--neon-color)] transition-colors duration-300" }, tool.name)
+              ),
+              React.createElement('p', { className: "text-gray-400 text-sm" }, tool.description)
+          )
+      );
+
+      const categoryDisplayNames = { 'editing': 'PDF Editing', 'organization': 'Organize PDF', 'optimization': 'Optimize PDF', 'security': 'PDF Security', 'manipulation': 'Page Manipulation', 'extraction': 'Content Extraction', 'conversion-from': 'Convert from PDF', 'conversion-to': 'Convert to PDF' };
+      const HomePage = ({ onSelectTool }) => {
+          const groupedTools = React.useMemo(() => {
+              return PDF_TOOLS.reduce((acc, tool) => {
+                  const categoryName = categoryDisplayNames[tool.category] || tool.category;
+                  if (!acc[categoryName]) acc[categoryName] = [];
+                  acc[categoryName].push(tool);
+                  return acc;
+              }, {});
+          }, []);
+          return (
+              React.createElement('div', null,
+                  React.createElement('div', { className: "text-center mb-16" },
+                      React.createElement('h1', { className: "text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white" },
+                          "Welcome to ",
+                          React.createElement('span', { style: { color: 'var(--neon-color)' } }, " PDF Land")
+                      ),
+                      React.createElement('p', { className: "mt-4 max-w-2xl mx-auto text-lg text-gray-400" }, "Your all-in-one PDF toolkit with a neon twist. Choose a tool below to get started.")
+                  ),
+                  React.createElement('div', { className: "space-y-12" },
+                      Object.entries(groupedTools).map(([category, tools]) => (
+                          React.createElement('div', { key: category },
+                              React.createElement('h2', { className: "text-2xl font-bold text-white mb-6 border-l-4 pl-4", style: { borderColor: 'var(--neon-color)' } }, category),
+                              React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" },
+                                  tools.map((tool) => React.createElement(ToolCard, { key: tool.id, tool: tool, onSelect: onSelectTool }))
+                              )
+                          )
+                      ))
+                  )
+              )
+          );
+      };
+
+      const Header = () => (
+          React.createElement('header', { className: "bg-gray-900/50 backdrop-blur-sm sticky top-0 z-50 border-b border-gray-800" },
+              React.createElement('div', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" },
+                  React.createElement('div', { className: "flex items-center justify-between h-20" },
+                      React.createElement('div', { className: "flex-shrink-0" },
+                          React.createElement('h1', { className: "text-3xl font-bold tracking-tighter", style: { color: 'var(--neon-color)' } }, "📄 PDF Land")
+                      )
+                  )
+              )
+          )
+      );
+      
+      function App() {
+          const [activeTool, setActiveTool] = React.useState(null);
+          const [theme] = React.useState(THEME_LIME);
+          React.useEffect(() => {
+              document.documentElement.style.setProperty('--neon-color', theme.color);
+          }, [theme]);
+          const handleSelectTool = (tool) => { setActiveTool(tool); window.scrollTo(0, 0); };
+          const handleGoHome = () => { setActiveTool(null); };
+          return (
+              React.createElement('div', { className: "bg-gray-950 text-gray-200 min-h-screen font-sans" },
+                  React.createElement(Header, null),
+                  React.createElement('main', { className: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10" },
+                      activeTool ?
+                      React.createElement(ToolPage, { tool: activeTool, onBack: handleGoHome }) :
+                      React.createElement(HomePage, { onSelectTool: handleSelectTool })
+                  ),
+                  React.createElement('footer', { className: "text-center py-6 text-gray-500 border-t border-gray-800 mt-12" },
+                      React.createElement('p', null, "© 2025 PDF Land. All rights reserved. Reimagined with a Neon Glow.")
+                  )
+              )
+          );
+      }
+
+      // --- Render App ---
+      const rootElement = document.getElementById('root');
+      if (!rootElement) {
+        throw new Error("Could not find root element to mount to");
+      }
+      const root = ReactDOM.createRoot(rootElement);
+      root.render(React.createElement(React.StrictMode, null, React.createElement(App)));
+
+    </script>
+  </body>
+</html>
